@@ -359,6 +359,7 @@ export const Bot = (props: BotProps & { class?: string }) => {
                                             <For each={[...removeDuplicateURL(message)]}>
                                                 {(src) => {
                                                     const URL = isValidURL(src.metadata.source);
+                                                    console.log('src stringified: ' + JSON.stringify(src));
                                                     if (!src.metadata['sourceUrl'])
                                                         return;
                                                     return (
