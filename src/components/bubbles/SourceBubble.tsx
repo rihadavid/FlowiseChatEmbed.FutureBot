@@ -21,6 +21,7 @@ type Props = {
   </>
 )
 */
+
 export const SourceBubble = (props: Props) => (
     <>
         <div
@@ -38,16 +39,17 @@ export const SourceBubble = (props: Props) => (
           data-testid="host-bubble"
           style={{
               width: 'max-content',
-              "max-width": '80px',
+              "max-width": '325px',
               "font-size": "13px",
               "border-radius": '15px',
               cursor: 'pointer',
               "text-overflow": "ellipsis",
+              "color": "#007cff",
               "overflow": "hidden",
               "white-space": "nowrap"
           }}
       >
-        {props.metadata['sourceName']}
+        {props.metadata['sourceName'] ? props.metadata['sourceName'] : props.metadata['sourceUrl']}
       </span>
         </div>
     </>
