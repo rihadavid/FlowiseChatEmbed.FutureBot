@@ -207,6 +207,8 @@ export const Bot = (props: BotProps & { class?: string }) => {
 
         if (result.data) {
 
+            console.log('result data: ' + JSON.stringify(result.data))
+
             const data = handleVectaraMetadata(result.data)
 
             if (typeof data === 'object' && data.text && data.sourceDocuments) {
@@ -359,7 +361,7 @@ export const Bot = (props: BotProps & { class?: string }) => {
                                             <For each={[...removeDuplicateURL(message)]}>
                                                 {(src) => {
                                                     const URL = isValidURL(src.metadata.source);
-                                                    console.log('src stringified: ' + JSON.stringify(src));
+                                                    //console.log('src stringified: ' + JSON.stringify(src));
                                                     if (!src.metadata['sourceUrl'])
                                                         return;
                                                     return (
