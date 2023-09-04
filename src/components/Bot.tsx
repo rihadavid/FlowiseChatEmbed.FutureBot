@@ -355,10 +355,12 @@ export const Bot = (props: BotProps & { class?: string }) => {
                                         <LoadingBubble />
                                     )}
                                     {message.sourceDocuments && message.sourceDocuments.length &&
-                                        <div style={{ display: 'flex', "flex-direction": 'row', width: '100%' }}>
+                                        <div style={{ display: 'flex', "flex-direction": 'column', width: '100%' }}>
                                             <For each={[...removeDuplicateURL(message)]}>
                                                 {(src) => {
-                                                    const URL = isValidURL(src.metadata.source)
+                                                    const URL = isValidURL(src.metadata.source);
+                                                    if (!src.metadata['sourceUrl'])
+                                                        return;
                                                     return (
                                                         <SourceBubble
                                                             pageContent={URL ? URL.pathname : src.pageContent}
