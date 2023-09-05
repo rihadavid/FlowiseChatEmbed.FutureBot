@@ -316,11 +316,31 @@ export const Bot = (props: BotProps & { class?: string }) => {
 
         message = handleVectaraMetadata(message)
 
-        message.sourceDocuments.forEach((source: any) => {
-            if (isValidURL(source.metadata.source) && !visitedURLs.includes(source.metadata.source)) {
-                visitedURLs.push(source.metadata.source)
+        let sourceDocs = message.sourceDocuments;
+
+        sourceDocs.sort((a, b) =>
+        {
+            // Check if the 'score' property exists in both objects
+            if ('score' in a.metadata && 'score' in b.metadata) {
+                // Sort by score in descending order
+                return b.metadata.score - a.metadata.score;
+            } else if ('score' in a.metadata) {
+                // 'a' has a score, so it should come before 'b'
+                return -1;
+            } else if ('score' in b.metadata) {
+                // 'b' has a score, so it should come after 'a'
+                return 1;
+            } else {
+                // Neither 'a' nor 'b' has a score, maintain their original order
+                return 0;
+            }
+        })
+
+        sourceDocs.forEach((source: any) => {
+            if (isValidURL(source.metadata['sourceUrl']) && !visitedURLs.includes(source.metadata['sourceUrl'])) {
+                visitedURLs.push(source.metadata['sourceUrl'])
                 newSourceDocuments.push(source)
-            } else if (!isValidURL(source.metadata.source)) {
+            } else if (!isValidURL(source.metadata['sourceUrl'])) {
                 newSourceDocuments.push(source)
             }
         })
@@ -362,7 +382,7 @@ export const Bot = (props: BotProps & { class?: string }) => {
                                                 {(src) => {
                                                     const URL = isValidURL(src.metadata.source);
                                                     //console.log('src stringified: ' + JSON.stringify(src));
-                                                    if (!src.metadata['sourceUrl'])
+                                                    if (!src.metadata['sourceUrl'] || !src.metadata['score'] || src.metadata['score'] < 0.81)
                                                         return;
                                                     return (
                                                         <SourceBubble
