@@ -382,7 +382,7 @@ export const Bot = (props: BotProps & { class?: string }) => {
                                                 {(src) => {
                                                     const URL = isValidURL(src.metadata.source);
                                                     //console.log('src stringified: ' + JSON.stringify(src));
-                                                    if (!src.metadata['sourceUrl'] || !src.metadata['score'] || src.metadata['score'] < 0.81)
+                                                    if (!src.metadata['sourceUrl'] || !src.metadata['score'] || src.metadata['score'] < 0.822)
                                                         return;
                                                     return (
                                                         <SourceBubble
