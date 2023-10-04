@@ -110,6 +110,31 @@ const defaultWelcomeMessage = 'Hi there! How can I help?'
     },
 ]*/
 
+let isTyping = false;
+const eventListeners = [];
+
+export const setIsTyping = (value) => {
+    if (isTyping !== value) {
+        isTyping = value;
+        eventListeners.forEach((fn) => fn(value));
+    }
+};
+
+export const getIsTyping = () => {
+    return isTyping;
+};
+
+export const addIsTypingListener = (fn) => {
+    eventListeners.push(fn);
+};
+
+export const removeIsTypingListener = (fn) => {
+    const index = eventListeners.indexOf(fn);
+    if (index > -1) {
+        eventListeners.splice(index, 1);
+    }
+};
+
 export const Bot = (props: BotProps & { class?: string }) => {
     let chatContainer: HTMLDivElement | undefined
     let bottomSpacer: HTMLDivElement | undefined
@@ -181,6 +206,7 @@ export const Bot = (props: BotProps & { class?: string }) => {
             return
         }
 
+        setIsTyping(true);
         setLoading(true)
         scrollToBottom()
 
@@ -207,7 +233,7 @@ export const Bot = (props: BotProps & { class?: string }) => {
 
         if (result.data) {
 
-            console.log('result data: ' + JSON.stringify(result.data))
+            //console.log('result data: ' + JSON.stringify(result.data))
 
             const data = handleVectaraMetadata(result.data)
 
@@ -261,8 +287,19 @@ export const Bot = (props: BotProps & { class?: string }) => {
             setSocketIOClientId(socket.id)
         })
 
+        let started;
+
         socket.on('start', () => {
+            started = true;
+            setIsTyping(true);
             setMessages((prevMessages) => [...prevMessages, { message: '', type: 'apiMessage' }])
+        })
+
+        socket.on('end', () => {
+            if (started) {
+                started = false;
+            setIsTyping(false);
+            }
         })
 
         socket.on('sourceDocuments', updateLastMessageSourceDocuments)
@@ -272,7 +309,6 @@ export const Bot = (props: BotProps & { class?: string }) => {
         // eslint-disable-next-line solid/reactivity
         return () => {
             setUserInput('')
-            setLoading(false)
             setMessages([
                 {
                     message: props.welcomeMessage ?? defaultWelcomeMessage,
