@@ -252,6 +252,7 @@ export const Bot = (props: BotProps & { class?: string }) => {
             scrollToBottom()
         }
         if (result.error) {
+            setIsTyping(false);
             const error = result.error
             console.error(error)
             const err: any = error
