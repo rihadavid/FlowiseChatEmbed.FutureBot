@@ -212,7 +212,7 @@ export const Bot = (props: BotProps & { class?: string }) => {
 
         // Send user question and history to API
         const welcomeMessage = props.welcomeMessage ?? defaultWelcomeMessage
-        const messageList = messages().filter((msg) => msg.message !== welcomeMessage)
+        const messageList = messages().filter((msg) => msg.message !== welcomeMessage).map(m => { return { 'message': m.message, 'type': m.type }})
 
         setMessages((prevMessages) => [...prevMessages, { message: value, type: 'userMessage' }])
 
