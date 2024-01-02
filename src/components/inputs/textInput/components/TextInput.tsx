@@ -1,4 +1,5 @@
 import { ShortTextInput } from './ShortTextInput'
+import { MultiLineTextInput } from './MultiLineTextInput'
 import { SendButton } from '@/components/SendButton'
 import { isMobile } from '@/utils/isMobileSignal'
 import { createSignal, onMount, onCleanup, createEffect } from 'solid-js'
@@ -62,7 +63,15 @@ export const TextInput = (props: Props) => {
 
         // Check if IME composition is in progress
         const isIMEComposition = e.isComposing || e.keyCode === 229
-        if (e.key === 'Enter' && !isIMEComposition) submit()
+        if (e.key === 'Enter' && !isIMEComposition) {
+            if (e.shiftKey) {
+                
+            } else {
+                // Submit on Enter (without Shift)
+                e.preventDefault();
+                submit();
+            }
+        }
     }
 
     onMount(() => {
@@ -71,7 +80,7 @@ export const TextInput = (props: Props) => {
 
     return (
         <div
-            class={'flex items-end justify-between chatbot-input'}
+            class={'flex items-center justify-between chatbot-input'}
             data-testid='input'
             style={{
                 'border-top': '1px solid #eeeeee',
@@ -86,8 +95,8 @@ export const TextInput = (props: Props) => {
             }}
             onKeyDown={submitWhenEnter}
         >
-            <ShortTextInput
-                ref={inputRef as HTMLInputElement}
+            <MultiLineTextInput
+                ref={inputRef as HTMLTextAreaElement}
                 onInput={handleInput}
                 value={inputValue()}
                 fontSize={props.fontSize}
