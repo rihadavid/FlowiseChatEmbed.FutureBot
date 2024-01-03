@@ -15,7 +15,7 @@ export const MultiLineTextInput = (props: MultiLineTextInputProps) => {
     const adjustHeight = () => {
         if (textAreaRef) {
             textAreaRef.style.height = '0'; // Temporarily collapse to get scroll height
-            const singleLineHeight = 28; // Adjust to match your single line height
+            const singleLineHeight = 24; // Adjust to match your single line height
             const maxHeight = singleLineHeight * 5; // Assuming 20px per line, adjust as needed
             textAreaRef.style.height = Math.min(textAreaRef.scrollHeight, maxHeight) + 'px';
         }
@@ -36,7 +36,7 @@ export const MultiLineTextInput = (props: MultiLineTextInputProps) => {
                 'font-size': props.fontSize ? `${props.fontSize}px` : '16px',
                 resize: 'none',
                 overflow: 'auto',
-                height: '28px' // Set initial height to match single line height
+                height: '40px' // Set initial height to match single line height
             }}
             onInput={(e) => {
                 local.onInput(e.currentTarget.value);

@@ -20,7 +20,8 @@ export const BotBubble = (props: Props) => {
 
   onMount(() => {
     if (botMessageEl) {
-      botMessageEl.innerHTML = Marked.parse(props.message)
+      let message = props.message.replaceAll("\n", "<br>")
+      botMessageEl.innerHTML = Marked.parse(message)
     }
   })
 

@@ -407,3 +407,21 @@ input {
     padding: 10px 10px;
     font-family: 'Poppins', sans-serif;
 }
+
+ol
+{
+    list-style: decimal;
+    padding-left: 20px;
+    display: inline-grid;
+    margin-block-end: 0px;
+    margin-block-start:  0px;
+}
+
+/*.whitespace-pre-wrap{
+    white-space: normal;
+}*/
+
+ul{
+    list-style: initial;
+    padding-left: 20px;
+}

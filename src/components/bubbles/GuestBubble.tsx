@@ -20,7 +20,8 @@ export const GuestBubble = (props: Props) => {
 
   onMount(() => {
     if (userMessageEl) {
-      userMessageEl.innerHTML = Marked.parse(props.message)
+      let message = props.message.replaceAll("\n", "<br>")
+      userMessageEl.innerHTML = /*props.message;*/Marked.parse(message)
     }
   })
 
