@@ -41,6 +41,9 @@ export const Full = (
             'width': props.theme?.chatWindow?.width ? `${props.theme?.chatWindow?.width.toString()}px` : '100%',
             'margin': '0px'
           }}
+          class={
+              `max-w-[90%]`
+          }
         >
           <Bot
             badgeBackgroundColor={props.theme?.chatWindow?.backgroundColor}
