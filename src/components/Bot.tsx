@@ -198,7 +198,9 @@ export const Bot = (props: BotProps & { class?: string }) => {
         scrollToBottom()
     }
 
-    const useWebRequest = () => (props.apiHost as string).endsWith('lambda-url.eu-central-1.on.aws');
+    function useWebRequest() {
+        return (props.apiHost as string).endsWith('lambda-url.eu-central-1.on.aws')
+    }
 
     // Handle form submission
     const handleSubmit = async (value: string) => {
@@ -225,7 +227,7 @@ export const Bot = (props: BotProps & { class?: string }) => {
 
         if (props.chatflowConfig) body.overrideConfig = props.chatflowConfig
 
-        if (isChatFlowAvailableToStream() && !useWebRequest) body.socketIOClientId = socketIOClientId()
+        if (isChatFlowAvailableToStream() && !useWebRequest()) body.socketIOClientId = socketIOClientId()
 
         const result = await sendMessageQuery({
             chatflowid: props.chatflowid,
@@ -237,7 +239,7 @@ export const Bot = (props: BotProps & { class?: string }) => {
 
             //console.log('result data: ' + JSON.stringify(result.data))
 
-            if(useWebRequest)
+            if(useWebRequest())
                 setIsTyping(false);
 
             const data = handleVectaraMetadata(result.data)
@@ -286,7 +288,7 @@ export const Bot = (props: BotProps & { class?: string }) => {
 
     // eslint-disable-next-line solid/reactivity
     createEffect(async () => {
-        if (useWebRequest)
+        if (useWebRequest())
             return;
 
         const { data } = await isStreamAvailableQuery({
