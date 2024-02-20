@@ -198,6 +198,8 @@ export const Bot = (props: BotProps & { class?: string }) => {
         scrollToBottom()
     }
 
+    const useWebRequest = () => (props.apiHost as string).endsWith('lambda-url.eu-central-1.on.aws');
+
     // Handle form submission
     const handleSubmit = async (value: string) => {
         setUserInput(value)
@@ -212,7 +214,7 @@ export const Bot = (props: BotProps & { class?: string }) => {
 
         // Send user question and history to API
         const welcomeMessage = props.welcomeMessage ?? defaultWelcomeMessage
-        const messageList = messages().filter((msg) => msg.message !== welcomeMessage).map(m => { return { 'message': m.message, 'type': m.type }})
+        const messageList = messages().filter((msg) => msg.message !== welcomeMessage).map(m => { return { 'message': m.message, 'type': m.type } })
 
         setMessages((prevMessages) => [...prevMessages, { message: value, type: 'userMessage' }])
 
@@ -223,7 +225,7 @@ export const Bot = (props: BotProps & { class?: string }) => {
 
         if (props.chatflowConfig) body.overrideConfig = props.chatflowConfig
 
-        if (isChatFlowAvailableToStream()) body.socketIOClientId = socketIOClientId()
+        if (isChatFlowAvailableToStream() && !useWebRequest) body.socketIOClientId = socketIOClientId()
 
         const result = await sendMessageQuery({
             chatflowid: props.chatflowid,
@@ -234,6 +236,9 @@ export const Bot = (props: BotProps & { class?: string }) => {
         if (result.data) {
 
             //console.log('result data: ' + JSON.stringify(result.data))
+
+            if(useWebRequest)
+                setIsTyping(false);
 
             const data = handleVectaraMetadata(result.data)
 
@@ -256,10 +261,18 @@ export const Bot = (props: BotProps & { class?: string }) => {
             const error = result.error
             console.error(error)
             const err: any = error
-            const errorData = typeof err === 'string'? err :err.response.data || `${err.response.status}: ${err.response.statusText}`
+            const errorData = typeof err === 'string' ? err : err.response.data || `${err.response.status}: ${err.response.statusText}`
             handleError(errorData)
             return
         }
+
+        /*if(useWebRequest){
+        setIsTyping(false);
+            setMessages((prevMessages) => [
+                ...prevMessages,
+                { message: "Chyba spojení.", type: 'apiMessage' }
+            ])
+        }*/
     }
 
     // Auto scroll chat to bottom
@@ -273,6 +286,9 @@ export const Bot = (props: BotProps & { class?: string }) => {
 
     // eslint-disable-next-line solid/reactivity
     createEffect(async () => {
+        if (useWebRequest)
+            return;
+
         const { data } = await isStreamAvailableQuery({
             chatflowid: props.chatflowid,
             apiHost: props.apiHost,
