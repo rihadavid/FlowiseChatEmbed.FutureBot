@@ -151,6 +151,7 @@ export const Bot = (props: BotProps & { class?: string }) => {
         },
     ], { equals: false })
     const [socketIOClientId, setSocketIOClientId] = createSignal('')
+    const [webRequestChatId, setWebRequestChatId] = createSignal('')
     const [isChatFlowAvailableToStream, setIsChatFlowAvailableToStream] = createSignal(false)
 
     onMount(() => {
@@ -227,7 +228,10 @@ export const Bot = (props: BotProps & { class?: string }) => {
 
         if (props.chatflowConfig) body.overrideConfig = props.chatflowConfig
 
-        if (isChatFlowAvailableToStream() && !useWebRequest()) body.socketIOClientId = socketIOClientId()
+        if (isChatFlowAvailableToStream() && !useWebRequest())
+            body.socketIOClientId = socketIOClientId()
+        else
+            body.webRequestChatId = webRequestChatId()
 
         const result = await sendMessageQuery({
             chatflowid: props.chatflowid,
@@ -277,6 +281,16 @@ export const Bot = (props: BotProps & { class?: string }) => {
         }*/
     }
 
+    function generateRandomString(length) {
+        var result           = '';
+        var characters       = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+        var charactersLength = characters.length;
+        for ( var i = 0; i < length; i++ ) {
+            result += characters.charAt(Math.floor(Math.random() * charactersLength));
+        }
+        return result;
+    }
+
     // Auto scroll chat to bottom
     createEffect(() => {
         if (messages()) scrollToBottom()
@@ -288,8 +302,10 @@ export const Bot = (props: BotProps & { class?: string }) => {
 
     // eslint-disable-next-line solid/reactivity
     createEffect(async () => {
-        if (useWebRequest())
+        if (useWebRequest()){
+            setWebRequestChatId(generateRandomString(10))
             return;
+        }
 
         const { data } = await isStreamAvailableQuery({
             chatflowid: props.chatflowid,
