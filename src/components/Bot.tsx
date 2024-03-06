@@ -152,6 +152,7 @@ export const Bot = (props: BotProps & { class?: string }) => {
     ], { equals: false })
     const [socketIOClientId, setSocketIOClientId] = createSignal('')
     const [webRequestChatId, setWebRequestChatId] = createSignal('')
+    const [timezone, setTimezone] = createSignal('')
     const [isChatFlowAvailableToStream, setIsChatFlowAvailableToStream] = createSignal(false)
 
     onMount(() => {
@@ -230,8 +231,10 @@ export const Bot = (props: BotProps & { class?: string }) => {
 
         if (isChatFlowAvailableToStream() && !useWebRequest())
             body.socketIOClientId = socketIOClientId()
-        else
+        else{
             body.webRequestChatId = webRequestChatId()
+            body.timezone = timezone()
+        }
 
         const result = await sendMessageQuery({
             chatflowid: props.chatflowid,
@@ -291,6 +294,23 @@ export const Bot = (props: BotProps & { class?: string }) => {
         return result;
     }
 
+    function getBrowserTimezone() {
+        // Get the current timezone offset in minutes and invert the sign
+        const offset = -new Date().getTimezoneOffset();
+
+        // Convert the offset to hours and minutes
+        const absOffset = Math.abs(offset);
+        const hours = Math.floor(absOffset / 60);
+        const minutes = absOffset % 60;
+
+        // Format the timezone in the GMT±H or GMT±H:MM format
+        const sign = offset >= 0 ? "+" : "-";
+        const formattedHours = hours.toString().padStart(2, '0');
+        const formattedMinutes = minutes > 0 ? `:${minutes.toString().padStart(2, '0')}` : '';
+
+        return `GMT${sign}${formattedHours}${formattedMinutes}`;
+    }
+
     // Auto scroll chat to bottom
     createEffect(() => {
         if (messages()) scrollToBottom()
@@ -303,6 +323,10 @@ export const Bot = (props: BotProps & { class?: string }) => {
     // eslint-disable-next-line solid/reactivity
     createEffect(async () => {
         if (useWebRequest()){
+
+            if (props.chatflowConfig.useTimezone)
+                setTimezone(getBrowserTimezone());
+
             setWebRequestChatId(generateRandomString(10))
             return;
         }
