@@ -28,7 +28,7 @@ export const Bubble = (props: BubbleProps) => {
     return (
         <>
             <style>{styles}</style>
-            <BubbleButton {...bubbleProps.theme?.button} toggleBot={toggleBot} isBotOpened={isBotOpened()} />
+            <BubbleButton {...bubbleProps.theme?.button} toggleBot={toggleBot} isBotOpened={isBotOpened()} useCalendly={props.chatflowConfig?.useCalendly} />
             <div
                 part='bot'
                 style={{
@@ -39,7 +39,7 @@ export const Bubble = (props: BubbleProps) => {
                     transform: isBotOpened() ? 'scale3d(1, 1, 1)' : 'scale3d(0, 0, 1)',
                     'box-shadow': 'rgb(0 0 0 / 16%) 0px 5px 40px',
                     'background-color': bubbleProps.theme?.chatWindow?.backgroundColor || '#ffffff',
-                    'z-index': 42424242
+                    'z-index': props.chatflowConfig?.useCalendly ? 9998 : 42424242
                 }}
                 class={
                     `fixed right-5 rounded-lg w-full max-w-[90%] max-h-[70%]` +

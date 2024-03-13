@@ -322,14 +322,31 @@ export const Bot = (props: BotProps & { class?: string }) => {
 
     // eslint-disable-next-line solid/reactivity
     createEffect(async () => {
+
+
+        if(props.chatflowConfig?.useCalendly){
+            const cssLink = document.createElement('link');
+            cssLink.href = 'https://assets.calendly.com/assets/external/widget.css';
+            cssLink.rel = 'stylesheet';
+            document.head.appendChild(cssLink);
+
+            const script = document.createElement("script");
+            script.src = "https://assets.calendly.com/assets/external/widget.js";
+            script.async = true;
+            document.head.appendChild(script);
+        }
+
         if (useWebRequest()){
 
-            if (props.chatflowConfig.useTimezone)
+            if (props.chatflowConfig?.useTimezone)
                 setTimezone(getBrowserTimezone());
 
             setWebRequestChatId(generateRandomString(10))
             return;
         }
+
+
+
 
         const { data } = await isStreamAvailableQuery({
             chatflowid: props.chatflowid,

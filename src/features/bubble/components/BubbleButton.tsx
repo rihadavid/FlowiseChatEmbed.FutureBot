@@ -3,7 +3,8 @@ import { isNotDefined } from '@/utils/index'
 import { ButtonTheme } from '../types'
 
 type Props = ButtonTheme & {
-    isBotOpened: boolean
+    isBotOpened: boolean,
+    useCalendly: boolean,
     toggleBot: () => void
 }
 
@@ -23,7 +24,7 @@ export const BubbleButton = (props: Props) => {
             }
             style={{
                 'background-color': props.backgroundColor ?? defaultButtonColor,
-                'z-index': 42424242,
+                'z-index': props.useCalendly ? 9998 : 42424242,
                 'right': props.right ? `${props.right.toString()}px` : `${defaultRight}px`,
                 'bottom': props.bottom ? `${props.bottom.toString()}px` : `${defaultBottom}px`,
             }}
