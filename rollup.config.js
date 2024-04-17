@@ -13,11 +13,13 @@ import { uglify } from "rollup-plugin-uglify";
 
 const extensions = [".ts", ".tsx"];
 
+const minify = !process.env.NO_MINIFY;
+
 const indexConfig = {
   plugins: [
     resolve({ extensions, browser: true }),
     commonjs(),
-    uglify(),
+    uglify(), // Conditionally apply uglify
     babel({
       babelHelpers: "bundled",
       exclude: "node_modules/**",
@@ -34,7 +36,7 @@ const indexConfig = {
     }),
     typescript(),
     typescriptPaths({ preserveExtensions: true }),
-    terser({ output: { comments: false } }),
+	terser({ output: { comments: false } }), // Conditionally apply terser
     /* If you want to see the live app
     serve({
       open: true,

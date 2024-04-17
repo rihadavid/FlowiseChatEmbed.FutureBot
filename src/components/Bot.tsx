@@ -33,83 +33,6 @@ export type BotProps = {
 
 const defaultWelcomeMessage = 'Hi there! How can I help?'
 
-/*const sourceDocuments = [
-    {
-        "pageContent": "I know some are talking about “living with COVID-19”. Tonight – I say that we will never just accept living with COVID-19. \r\n\r\nWe will continue to combat the virus as we do other diseases. And because this is a virus that mutates and spreads, we will stay on guard. \r\n\r\nHere are four common sense steps as we move forward safely.  \r\n\r\nFirst, stay protected with vaccines and treatments. We know how incredibly effective vaccines are. If you’re vaccinated and boosted you have the highest degree of protection. \r\n\r\nWe will never give up on vaccinating more Americans. Now, I know parents with kids under 5 are eager to see a vaccine authorized for their children. \r\n\r\nThe scientists are working hard to get that done and we’ll be ready with plenty of vaccines when they do. \r\n\r\nWe’re also ready with anti-viral treatments. If you get COVID-19, the Pfizer pill reduces your chances of ending up in the hospital by 90%.",
-        "metadata": {
-          "source": "blob",
-          "blobType": "",
-          "loc": {
-            "lines": {
-              "from": 450,
-              "to": 462
-            }
-          }
-        }
-    },
-    {
-        "pageContent": "sistance,  and  polishing  [65].  For  instance,  AI  tools  generate\nsuggestions based on inputting keywords or topics. The tools\nanalyze  search  data,  trending  topics,  and  popular  queries  to\ncreate  fresh  content.  What’s  more,  AIGC  assists  in  writing\narticles and posting blogs on specific topics. While these tools\nmay not be able to produce high-quality content by themselves,\nthey can provide a starting point for a writer struggling with\nwriter’s block.\nH.  Cons of AIGC\nOne of the main concerns among the public is the potential\nlack  of  creativity  and  human  touch  in  AIGC.  In  addition,\nAIGC sometimes lacks a nuanced understanding of language\nand context, which may lead to inaccuracies and misinterpre-\ntations. There are also concerns about the ethics and legality\nof using AIGC, particularly when it results in issues such as\ncopyright  infringement  and  data  privacy.  In  this  section,  we\nwill discuss some of the disadvantages of AIGC (Table IV).",
-        "metadata": {
-          "source": "blob",
-          "blobType": "",
-          "pdf": {
-            "version": "1.10.100",
-            "info": {
-              "PDFFormatVersion": "1.5",
-              "IsAcroFormPresent": false,
-              "IsXFAPresent": false,
-              "Title": "",
-              "Author": "",
-              "Subject": "",
-              "Keywords": "",
-              "Creator": "LaTeX with hyperref",
-              "Producer": "pdfTeX-1.40.21",
-              "CreationDate": "D:20230414003603Z",
-              "ModDate": "D:20230414003603Z",
-              "Trapped": {
-                "name": "False"
-              }
-            },
-            "metadata": null,
-            "totalPages": 17
-          },
-          "loc": {
-            "pageNumber": 8,
-            "lines": {
-              "from": 301,
-              "to": 317
-            }
-          }
-        }
-    },
-    {
-        "pageContent": "Main article: Views of Elon Musk",
-        "metadata": {
-          "source": "https://en.wikipedia.org/wiki/Elon_Musk",
-          "loc": {
-            "lines": {
-              "from": 2409,
-              "to": 2409
-            }
-          }
-        }
-    },
-    {
-        "pageContent": "First Name: John\nLast Name: Doe\nAddress: 120 jefferson st.\nStates: Riverside\nCode: NJ\nPostal: 8075",
-        "metadata": {
-          "source": "blob",
-          "blobType": "",
-          "line": 1,
-          "loc": {
-            "lines": {
-              "from": 1,
-              "to": 6
-            }
-          }
-        }
-    },
-]*/
-
 let isTyping = false;
 const eventListeners = [];
 
@@ -140,6 +63,9 @@ export const Bot = (props: BotProps & { class?: string }) => {
     let bottomSpacer: HTMLDivElement | undefined
     let botContainer: HTMLDivElement | undefined
 
+    const [savedChatId, setSavedChatId] = createSignal('')
+    const [webRequestChatId, setWebRequestChatId] = createSignal('')
+    const [socketIOClientId, setSocketIOClientId] = createSignal('')
     const [userInput, setUserInput] = createSignal('')
     const [loading, setLoading] = createSignal(false)
     const [sourcePopupOpen, setSourcePopupOpen] = createSignal(false)
@@ -150,12 +76,45 @@ export const Bot = (props: BotProps & { class?: string }) => {
             type: 'apiMessage'
         },
     ], { equals: false })
-    const [socketIOClientId, setSocketIOClientId] = createSignal('')
-    const [webRequestChatId, setWebRequestChatId] = createSignal('')
     const [timezone, setTimezone] = createSignal('')
     const [isChatFlowAvailableToStream, setIsChatFlowAvailableToStream] = createSignal(false)
 
+    const chatHistoryIdentifier = 'chatHistory' + (props.chatflowConfig ? (props.chatflowConfig.botId ?? props.chatflowConfig.pineconeNamespace) : '');
+
+
+    const setMessagesWithStorage = (updateFunction) => {
+        setMessages((prevMessages) => {
+            const updatedMessages = updateFunction(prevMessages);
+            let sa = savedChatId();
+            let so = socketIOClientId();
+            let we = webRequestChatId();
+            const dataToSave = {
+                chatId: sa || so || we,
+                timestamp: Date.now(),
+                messages: updatedMessages,
+            };
+            localStorage.setItem(chatHistoryIdentifier, JSON.stringify(dataToSave));
+            return updatedMessages;
+        });
+    };
+
     onMount(() => {
+        const savedData = JSON.parse(localStorage.getItem(chatHistoryIdentifier));
+        if (savedData) {
+            const currentTime = Date.now();
+            const timeElapsed = currentTime - savedData.timestamp;
+
+            if (timeElapsed <= 43200000) { // 12 hours
+                setMessages(savedData.messages)
+                if(savedData.chatId)
+                {
+                    setSavedChatId(savedData.chatId);
+                    setWebRequestChatId(savedData.chatId);
+                }
+            } else {
+                localStorage.removeItem(chatHistoryIdentifier); // Clear outdated history
+            }
+        }
         if (!bottomSpacer) return
         setTimeout(() => {
             chatContainer?.scrollTo(0, chatContainer.scrollHeight)
@@ -169,7 +128,7 @@ export const Bot = (props: BotProps & { class?: string }) => {
     }
 
     const updateLastMessage = (text: string) => {
-        setMessages(data => {
+        setMessagesWithStorage(data => {
             const updated = data.map((item, i) => {
                 if (i === data.length - 1) {
                     return { ...item, message: item.message + text };
@@ -181,7 +140,7 @@ export const Bot = (props: BotProps & { class?: string }) => {
     }
 
     const updateLastMessageSourceDocuments = (sourceDocuments: any) => {
-        setMessages(data => {
+        setMessagesWithStorage(data => {
             const updated = data.map((item, i) => {
                 if (i === data.length - 1) {
                     return { ...item, sourceDocuments: sourceDocuments };
@@ -194,7 +153,7 @@ export const Bot = (props: BotProps & { class?: string }) => {
 
     // Handle errors
     const handleError = (message = 'Oops! There seems to be an error. Please try again.') => {
-        setMessages((prevMessages) => [...prevMessages, { message, type: 'apiMessage' }])
+        setMessagesWithStorage((prevMessages) => [...prevMessages, { message, type: 'apiMessage' }])
         setLoading(false)
         setUserInput('')
         scrollToBottom()
@@ -220,7 +179,7 @@ export const Bot = (props: BotProps & { class?: string }) => {
         const welcomeMessage = props.welcomeMessage ?? defaultWelcomeMessage
         const messageList = messages().filter((msg) => msg.message !== welcomeMessage).map(m => { return { 'message': m.message, 'type': m.type } })
 
-        setMessages((prevMessages) => [...prevMessages, { message: value, type: 'userMessage' }])
+        setMessagesWithStorage((prevMessages) => [...prevMessages, { message: value, type: 'userMessage' }])
 
         const body: IncomingInput = {
             question: value,
@@ -229,10 +188,14 @@ export const Bot = (props: BotProps & { class?: string }) => {
 
         if (props.chatflowConfig) body.overrideConfig = props.chatflowConfig
 
-        if (isChatFlowAvailableToStream() && !useWebRequest())
+        if (isChatFlowAvailableToStream() && !useWebRequest()){
             body.socketIOClientId = socketIOClientId()
+
+            if(savedChatId())
+                body.chatId = savedChatId();
+        }
         else{
-            body.webRequestChatId = webRequestChatId()
+            body.webRequestChatId = savedChatId() || webRequestChatId()
             body.timezone = timezone()
         }
 
@@ -253,13 +216,13 @@ export const Bot = (props: BotProps & { class?: string }) => {
 
             if (typeof data === 'object' && data.text && data.sourceDocuments) {
                 if (!isChatFlowAvailableToStream()) {
-                    setMessages((prevMessages) => [
+                    setMessagesWithStorage((prevMessages) => [
                         ...prevMessages,
                         { message: data.text, sourceDocuments: data.sourceDocuments, type: 'apiMessage' }
                     ])
                 }
             } else {
-                if (!isChatFlowAvailableToStream()) setMessages((prevMessages) => [...prevMessages, { message: data, type: 'apiMessage' }])
+                if (!isChatFlowAvailableToStream()) setMessagesWithStorage((prevMessages) => [...prevMessages, { message: data, type: 'apiMessage' }])
             }
             setLoading(false)
             setUserInput('')
@@ -274,14 +237,6 @@ export const Bot = (props: BotProps & { class?: string }) => {
             handleError(errorData)
             return
         }
-
-        /*if(useWebRequest){
-        setIsTyping(false);
-            setMessages((prevMessages) => [
-                ...prevMessages,
-                { message: "Chyba spojení.", type: 'apiMessage' }
-            ])
-        }*/
     }
 
     function generateRandomString(length) {
@@ -341,7 +296,7 @@ export const Bot = (props: BotProps & { class?: string }) => {
             if (props.chatflowConfig?.useTimezone)
                 setTimezone(getBrowserTimezone());
 
-            setWebRequestChatId(generateRandomString(10))
+            setWebRequestChatId(savedChatId() || generateRandomString(10))
             return;
         }
 
@@ -368,7 +323,7 @@ export const Bot = (props: BotProps & { class?: string }) => {
         socket.on('start', () => {
             started = true;
             setIsTyping(true);
-            setMessages((prevMessages) => [...prevMessages, { message: '', type: 'apiMessage' }])
+            setMessagesWithStorage((prevMessages) => [...prevMessages, { message: '', type: 'apiMessage' }])
         })
 
         socket.on('end', () => {
@@ -385,7 +340,7 @@ export const Bot = (props: BotProps & { class?: string }) => {
         // eslint-disable-next-line solid/reactivity
         return () => {
             setUserInput('')
-            setMessages([
+            setMessagesWithStorage([
                 {
                     message: props.welcomeMessage ?? defaultWelcomeMessage,
                     type: 'apiMessage'

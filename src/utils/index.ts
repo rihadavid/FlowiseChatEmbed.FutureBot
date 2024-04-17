@@ -31,6 +31,8 @@ export const sendRequest = async <ResponseData>(
         let data: any
         const contentType = response.headers.get('Content-Type')
         if (contentType && contentType.includes('application/json')) {
+
+            console.log(JSON.stringify(response));
             data = await response.json()
         } else {
             data = await response.text()
