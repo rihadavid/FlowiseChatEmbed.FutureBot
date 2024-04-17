@@ -4,12 +4,14 @@ type Props = {
   botContainer: HTMLDivElement | undefined
   poweredByTextColor?: string
   badgeBackgroundColor?: string
+    policyUrl?: string
 }
 
 const defaultTextColor = '#303235'
 
 export const Badge = (props: Props) => {
   let liteBadge: HTMLAnchorElement | undefined
+    let policyLabel: HTMLAnchorElement | undefined
   let observer: MutationObserver | undefined
 
   const appendBadgeIfNecessary = (mutations: MutationRecord[]) => {
@@ -62,7 +64,21 @@ export const Badge = (props: Props) => {
         style={{ "font-weight": 'bold', color: props.poweredByTextColor ?? defaultTextColor }}
       >
         <span>Futurebot.ai</span>
-      </a>
+      </a>{!!props.policyUrl && (
+          <>  |&nbsp;&nbsp;
+              <a
+                  ref={policyLabel}
+                  href={props.policyUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="lite-badge"
+                  id="policy-label"
+                  style={{"font-weight": 'bold', color: props.poweredByTextColor ?? defaultTextColor}}
+              >
+                  <span>Zpracování osobních údajů</span>
+              </a>
+          </>
+        )}
     </span>
   )
 }
