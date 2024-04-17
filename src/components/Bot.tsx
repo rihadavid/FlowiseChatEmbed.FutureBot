@@ -1,4 +1,4 @@
-import { createSignal, createEffect, For, onMount } from 'solid-js'
+import {createSignal, createEffect, For, onMount, Show, onCleanup} from 'solid-js'
 import { sendMessageQuery, isStreamAvailableQuery, IncomingInput } from '@/queries/sendMessageQuery'
 import { TextInput } from './inputs/textInput'
 import { GuestBubble } from './bubbles/GuestBubble'
@@ -63,6 +63,29 @@ export const Bot = (props: BotProps & { class?: string }) => {
     let bottomSpacer: HTMLDivElement | undefined
     let botContainer: HTMLDivElement | undefined
 
+    const [isTypingSignal, setIsTypingSignal] = createSignal(getIsTyping());
+
+
+    const handleTypingChange = (newIsTyping) => {
+        console.log('handleTypingChange: ' + newIsTyping);
+        setIsTypingSignal(newIsTyping);
+    };
+
+    createEffect(() => {
+        // This function should run when the component mounts
+        const handleTypingChange = (newIsTyping) => {
+            setIsTypingSignal(newIsTyping);
+        };
+
+        // Register the listener
+        addIsTypingListener(handleTypingChange);
+
+        // Cleanup: Unregister the listener when the component unmounts
+        onCleanup(() => {
+            removeIsTypingListener(handleTypingChange);
+        });
+    });
+
     const [savedChatId, setSavedChatId] = createSignal('')
     const [webRequestChatId, setWebRequestChatId] = createSignal('')
     const [socketIOClientId, setSocketIOClientId] = createSignal('')
@@ -81,40 +104,57 @@ export const Bot = (props: BotProps & { class?: string }) => {
 
     const chatHistoryIdentifier = 'chatHistory' + (props.chatflowConfig ? (props.chatflowConfig.botId ?? props.chatflowConfig.pineconeNamespace) : '');
 
+    const clearChat = () => {
+        if(isTypingSignal())
+            return;
+        localStorage.removeItem(chatHistoryIdentifier); // Use the existing chatHistoryIdentifier variable
+        setMessages([
+            {
+                message: props.welcomeMessage ?? defaultWelcomeMessage, // Use the existing defaultWelcomeMessage variable or props
+                type: 'apiMessage'
+            }
+        ]);
+        if (useWebRequest())
+            setWebRequestChatId(savedChatId() || generateRandomString(10))
+    };
 
     const setMessagesWithStorage = (updateFunction) => {
         setMessages((prevMessages) => {
             const updatedMessages = updateFunction(prevMessages);
-            let sa = savedChatId();
-            let so = socketIOClientId();
-            let we = webRequestChatId();
-            const dataToSave = {
-                chatId: sa || so || we,
-                timestamp: Date.now(),
-                messages: updatedMessages,
-            };
-            localStorage.setItem(chatHistoryIdentifier, JSON.stringify(dataToSave));
+            if(!props.chatflowConfig.clearOnRefresh)
+            {
+                const dataToSave = {
+                    chatId: savedChatId() || socketIOClientId() || webRequestChatId(),
+                    timestamp: Date.now(),
+                    messages: updatedMessages,
+                };
+                localStorage.setItem(chatHistoryIdentifier, JSON.stringify(dataToSave));
+            }
             return updatedMessages;
         });
     };
 
     onMount(() => {
-        const savedData = JSON.parse(localStorage.getItem(chatHistoryIdentifier));
-        if (savedData) {
-            const currentTime = Date.now();
-            const timeElapsed = currentTime - savedData.timestamp;
+        if(!props.chatflowConfig.clearOnRefresh)
+        {
+            const savedData = JSON.parse(localStorage.getItem(chatHistoryIdentifier));
+            if (savedData) {
+                const currentTime = Date.now();
+                const timeElapsed = currentTime - savedData.timestamp;
 
-            if (timeElapsed <= 43200000) { // 12 hours
-                setMessages(savedData.messages)
-                if(savedData.chatId)
-                {
-                    setSavedChatId(savedData.chatId);
-                    setWebRequestChatId(savedData.chatId);
+                if (timeElapsed <= 43200000) { // 12 hours
+                    setMessages(savedData.messages)
+                    if(savedData.chatId)
+                    {
+                        setSavedChatId(savedData.chatId);
+                        setWebRequestChatId(savedData.chatId);
+                    }
+                } else {
+                    localStorage.removeItem(chatHistoryIdentifier); // Clear outdated history
                 }
-            } else {
-                localStorage.removeItem(chatHistoryIdentifier); // Clear outdated history
             }
         }
+
         if (!bottomSpacer) return
         setTimeout(() => {
             chatContainer?.scrollTo(0, chatContainer.scrollHeight)
@@ -417,6 +457,15 @@ export const Bot = (props: BotProps & { class?: string }) => {
     return (
         <>
             <div ref={botContainer} class={'relative flex w-full h-full text-base overflow-hidden bg-cover bg-center flex-col items-center chatbot-container ' + props.class}>
+                <Show when={props.chatflowConfig.showClearButton && messages().length >= 3}>
+                    <div className={`clearChatButton ${isTypingSignal() ? 'disabled' : ''}`} onClick={clearChat} style={{ pointerEvents: isTypingSignal() ? 'none' : 'auto' }}>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" fill="currentColor" viewBox="0 0 16 16" style={{ color: isTypingSignal() ? '#eaeaea' : 'white' }}>
+                            <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"/>
+                            <path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"/>
+                        </svg>
+                        <span className="textAdjust">Vyčistit chat</span>
+                    </div>
+                </Show>
                 <div class="flex w-full h-full justify-center">
                     <div style={{ "padding-bottom": '100px' }} ref={chatContainer} class="overflow-y-scroll min-w-full w-full min-h-full px-3 pt-10 relative scrollable-container chatbot-chat-view scroll-smooth">
                         <For each={[...messages()]}>

@@ -13,8 +13,6 @@ import { uglify } from "rollup-plugin-uglify";
 
 const extensions = [".ts", ".tsx"];
 
-const minify = !process.env.NO_MINIFY;
-
 const indexConfig = {
   plugins: [
     resolve({ extensions, browser: true }),
