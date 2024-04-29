@@ -29,6 +29,7 @@ export type BotProps = {
     poweredByTextColor?: string
     badgeBackgroundColor?: string
     fontSize?: number
+    placement?: 'inline' | 'bubble';
 }
 
 const defaultWelcomeMessage = 'Hi there! How can I help?'
@@ -102,7 +103,7 @@ export const Bot = (props: BotProps & { class?: string }) => {
     const [timezone, setTimezone] = createSignal('')
     const [isChatFlowAvailableToStream, setIsChatFlowAvailableToStream] = createSignal(false)
 
-    const chatHistoryIdentifier = 'chatHistory' + (props.chatflowConfig ? (props.chatflowConfig.botId ?? props.chatflowConfig.pineconeNamespace) : '');
+    const chatHistoryIdentifier = 'chatHistory' + (props.placement === 'inline' ? 'Inline' : '') + (props.chatflowConfig ? (props.chatflowConfig.botId ?? props.chatflowConfig.pineconeNamespace) : '');
 
     const clearChat = () => {
         if(isTypingSignal())

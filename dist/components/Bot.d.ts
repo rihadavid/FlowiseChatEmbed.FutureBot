@@ -16,6 +16,7 @@ export type BotProps = {
     poweredByTextColor?: string;
     badgeBackgroundColor?: string;
     fontSize?: number;
+    placement?: 'inline' | 'bubble';
 };
 export declare const setIsTyping: (value: any) => void;
 export declare const getIsTyping: () => boolean;

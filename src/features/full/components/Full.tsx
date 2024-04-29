@@ -37,13 +37,14 @@ export const Full = (
         <div
           style={{
             'background-color': props.theme?.chatWindow?.backgroundColor || '#ffffff',
-            'height': props.theme?.chatWindow?.height ? `${props.theme?.chatWindow?.height.toString()}px` : '100vh',
+            'height': props.theme?.chatWindow?.height ? `${props.theme?.chatWindow?.height.toString()}px` : '75vh',
+              'max-height': '75vh',
             'width': props.theme?.chatWindow?.width ? `${props.theme?.chatWindow?.width.toString()}px` : '100%',
             'margin': '0px'
           }}
-          class={
-              `max-w-[90%]`
-          }
+          /*class={
+              `max-h-[75%]`
+          }*/
         >
           <Bot
             badgeBackgroundColor={props.theme?.chatWindow?.backgroundColor}
@@ -55,7 +56,8 @@ export const Full = (
             fontSize={props.theme?.chatWindow?.fontSize}
             chatflowid={props.chatflowid}
             chatflowConfig={props.chatflowConfig}
-            apiHost={props.apiHost} />
+            apiHost={props.apiHost}
+            placement="inline" />
         </div>
       </Show>
     </>
