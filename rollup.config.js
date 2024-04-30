@@ -1,27 +1,29 @@
-import resolve from "@rollup/plugin-node-resolve";
-import terser from "@rollup/plugin-terser";
-import { babel } from "@rollup/plugin-babel";
-import postcss from "rollup-plugin-postcss";
-import autoprefixer from "autoprefixer";
-import tailwindcss from "tailwindcss";
-import typescript from "@rollup/plugin-typescript";
-import { typescriptPaths } from "rollup-plugin-typescript-paths";
-import commonjs from "@rollup/plugin-commonjs";
-import { uglify } from "rollup-plugin-uglify";
+import resolve from '@rollup/plugin-node-resolve';
+import terser from '@rollup/plugin-terser';
+import { babel } from '@rollup/plugin-babel';
+import json from '@rollup/plugin-json';
+import postcss from 'rollup-plugin-postcss';
+import autoprefixer from 'autoprefixer';
+import tailwindcss from 'tailwindcss';
+import typescript from '@rollup/plugin-typescript';
+import { typescriptPaths } from 'rollup-plugin-typescript-paths';
+import commonjs from '@rollup/plugin-commonjs';
+import { uglify } from 'rollup-plugin-uglify';
 //import serve from "rollup-plugin-serve";
 //import livereload from "rollup-plugin-livereload";
 
-const extensions = [".ts", ".tsx"];
+const extensions = ['.ts', '.tsx'];
 
 const indexConfig = {
   plugins: [
     resolve({ extensions, browser: true }),
     commonjs(),
-    uglify(), // Conditionally apply uglify
+    //uglify(),
+    json(),
     babel({
-      babelHelpers: "bundled",
-      exclude: "node_modules/**",
-      presets: ["solid", "@babel/preset-typescript"],
+      babelHelpers: 'bundled',
+      exclude: 'node_modules/**',
+      presets: ['solid', '@babel/preset-typescript'],
       extensions,
     }),
     postcss({
@@ -34,7 +36,7 @@ const indexConfig = {
     }),
     typescript(),
     typescriptPaths({ preserveExtensions: true }),
-	terser({ output: { comments: false } }), // Conditionally apply terser
+	//terser({ output: { comments: false } }), // Conditionally apply terser
     /* If you want to see the live app
     serve({
       open: true,
@@ -50,10 +52,10 @@ const indexConfig = {
 const configs = [
   {
     ...indexConfig,
-    input: "./src/web.ts",
+    input: './src/web.ts',
     output: {
-      file: "dist/web.js",
-      format: "es",
+      file: 'dist/web.js',
+      format: 'es',
     },
   },
 ];
